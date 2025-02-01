@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMS Phishing Detection</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            margin-top: 50px;
+        }
+        .result-box {
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        .phishing {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .safe {
+            background-color: #d4edda;
+            color: #155724;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>SMS Phishing Detection</h2>
+
+    <div id="sms-result" class="result-box safe">
+        <p>No new SMS detected. Please wait for incoming messages.</p>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.min.js"></script>
+<script>
+    var socket = io.connect("http://127.0.0.1:5000");
+
+    socket.on('sms_received', function(data) {
+        var smsResult = document.getElementById('sms-result');
+        var resultMessage = '';
+        
+        if (data.phishing_urls.length > 0) {
+            resultMessage = '<p><strong>Warning:</strong> This SMS contains phishing URLs!</p><ul>';
+            data.phishing_urls.forEach(function(url) {
+                resultMessage += '<li><a href="' + url + '" target="_blank">' + url + '</a></li>';
+            });
+            resultMessage += '</ul>';
+            smsResult.className = 'result-box phishing';
+        } else {
+            resultMessage = '<p><strong>No phishing URLs detected.</strong> This message seems safe.</p>';
+            smsResult.className = 'result-box safe';
+        }
+        
+        smsResult.innerHTML = resultMessage;
+    });
+</script>
+
+</body>
+</html>
